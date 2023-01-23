@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+ <semantics>
+  <mrow>
+   <mrow>
+    <mn>5</mn>
+    <mo stretchy="false">+</mo>
+    <mn>42</mn>
+   </mrow>
+   <mo stretchy="false">=</mo>
+   <mn>47</mn>
+  </mrow>
+  <annotation encoding="StarMath 5.0">5 + 42 = 47</annotation>
+ </semantics>
+</math>

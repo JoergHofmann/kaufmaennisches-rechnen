@@ -14,3 +14,4 @@ $(when (target~="moodle") [[header: true]])
 :(Autor['mail']="joerg.hofmann@pecunia-non-olet.com")
 
 $(include "kap01.md")
+$(include "kap01-grundbegriffe.md")

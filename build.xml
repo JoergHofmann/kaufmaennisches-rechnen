@@ -7,7 +7,7 @@
 		<delete includeemptydirs="true">
 		    <fileset dir = "0_TMP" includes = "**/*"/>
 		    <fileset dir = "0_OUT" includes = "**/*"/>
-		    <!-- <fileset dir = "0_HUGO/content" includes = "**/*"/> -->
+		    <fileset dir = "0_HUGO/content" includes = "**/*"/>
 		</delete>
 	</target>
 
