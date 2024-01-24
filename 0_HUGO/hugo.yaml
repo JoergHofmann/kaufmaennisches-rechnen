@@ -1,0 +1,14 @@
+---
+security:
+  enableInlineShortcodes: false
+  exec:
+    allow:
+    - ^(dart-)?sass(-embedded)?$
+    - ^go$
+    - ^npx$
+    - ^postcss$
+    - ^pandoc$
+baseURL: http://example.org/
+languageCode: de-DE
+title: Kaufmännisches Rechnen
+theme: github.com/McShelby/hugo-theme-relearn

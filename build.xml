@@ -1,18 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="kaufm-rechnen" default="pdf">
-
+<project name = "kaufm-rechnen">
 	<target name="prepare" unless="done">
 		<property environment="env" />
+		<property name="prefix" value="kfre" />
+		<!-- Alle temporären Verzeichnisse leeren. -->
 		<delete includeemptydirs="true">
-		    <fileset dir = "0_TMP" includes = "**/*"/>
-		    <fileset dir = "0_OUT" includes = "**/*"/>
-		    <fileset dir = "0_HUGO/content" includes = "**/*"/>
+			<fileset dir = "0_TMP" includes = "**/*"/>
+			<fileset dir = "0_OUT" includes = "**/*"/>
+			<fileset dir = "0_HUGO/content" includes = "**/*"/>
+			<!-- <fileset dir = "${env.local_www_dir}/${ant.project.name}" includes = "**/*"/> -->
 		</delete>
+		<copy todir="0_TMP" >
+			<fileset dir=".">
+				<include name="*.lua" />
+				<include name="*.yaml" />
+				<include name="*.tex" />
+				<include name="*.html" />
+				<include name="*.md" />
+			</fileset>
+		</copy>
 	</target>
 
-	<target name="copy4hugo" unless="done">
-	    <copy todir="0_HUGO/static/images" overwrite="true">
+	<target name="copy4hugo" depends="prepare" unless="done">
+		<copy todir="0_HUGO/static/images" overwrite="true">
+			<fileset dir="bilder" includes="*.png" />
+			<fileset dir="bilder" includes="*.svg" />
+			<fileset dir="bilder" includes="*.gif" />
+			<fileset dir="bilder" includes="*.jpg" />
+			<fileset dir="bilder" includes="*.pdf" />
+		</copy>
+		<copy todir="0_HUGO/layouts/partials" overwrite="true">
+			<fileset dir="hugo/layouts/partials">
+				<include name="*.*" />
+			</fileset>
+		</copy>
+		<copy todir="0_TMP" >
+			<fileset dir="hugo">
+				<include name="*.lua" />
+				<include name="*.yaml" />
+				<include name="*.tex" />
+				<include name="*.html" />
+				<include name="*.md" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="copy4pdf" depends="prepare" unless="done">
+		<copy todir="0_TMP" overwrite="true">
 			<fileset dir="bilder" includes="*.png" />
 			<fileset dir="bilder" includes="*.svg" />
 			<fileset dir="bilder" includes="*.gif" />
@@ -21,78 +56,43 @@
 		</copy>
 	</target>
 
+
 	<target name="hugo" depends="prepare" unless="done">
 	    <antcall target="copy4hugo" />
-	    <echo message='upp titelseite'/>
-	    <exec executable="upp" output="0_HUGO/content/_index.pdc" logError="true">
+            <move file="0_TMP/hugo.yaml" tofile="0_HUGO/hugo.yaml" />
+	    <exec executable="ypp" output="0_HUGO/content/_index.pdc" logError="true">
 		<arg line="-l hugo.lua titelseite.md" />
 	    </exec>
-	    <echo message='upp kap01'/>
-	    <mkdir dir = "0_HUGO/content/kap01" />
-	    <exec executable="upp" output="0_HUGO/content/kap01/_index.pdc" logError="true">
-		<arg line="-l hugo.lua kap01.md" />
-	    </exec>
-	    <apply executable="upp" dest="0_HUGO/content/kap01/" logError="true">
+	    <apply executable="ypp" dir="0_TMP" dest="0_TMP" logError="true">
 		<arg line="-l hugo.lua" />
 		<srcfile />
-		<arg line="-o" />
+		<arg line="-o " />
 		<targetfile />
-		<fileset dir="." includes="kap01*.md" excludes="kap01.md" />
+		<fileset dir="0_TMP">
+			<include name="${prefix}-kap*.md" />
+			<exclude name="${prefix}-kap-h.md" />
+		</fileset>
 		<mapper type="glob" from="*.md" to="*.pdc" />
 	    </apply>
-	    <!--	    <echo message='upp kap02'/>
-	    <mkdir dir = "0_HUGO/content/kap02" />
-	    <exec executable="upp" output="0_HUGO/content/kap02/_index.pdc" logError="true">
-		<arg line="-l hugo.lua kap02.md" />
+	    <exec executable="CopyForHugo.sh" dir="0_TMP" logError="true">
+		<arg line="${prefix}" />
 	    </exec>
-	    <apply executable="upp" dest="0_HUGO/content/kap02/" logError="true">
-		<arg line="-l hugo.lua" />
-		<srcfile />
-		<arg line="-o" />
-		<targetfile />
-		<fileset dir="." includes="kap02*.md" excludes="kap02.md" />
-		<mapper type="glob" from="*.md" to="*.pdc" />
-	    </apply> -->
 	    <property name="done" value="done" />
 	</target>
 
-	<target name="make-pdf" unless="done">
-	    	<echo message="Target: make-pdf"/>
-		<copy todir="0_TMP" >
-			<fileset dir=".">
-				<include name="*.lua" />
-				<include name="*.yaml" />
-				<include name="*.tex" />
-			</fileset>
-			<fileset dir="./bilder">
-				<include name="*.png" />
-				<include name="*.svg" />
-				<include name="*.gif" />
-				<include name="*.jpg" />
-				<include name="*.pdf" />
-			</fileset>
-		    </copy>
-	    	<echo message='Starte "upp" '/>
-		<exec executable="upp" output="0_TMP/${ant.project.name}.md" logError="true">
-			<arg line="-l context.lua ${ant.project.name}.md" />
-		    </exec>
-		    <replace file="0_TMP/${ant.project.name}.md" token="![](/images/" value="![](" /> 
 
-	    	<echo message='Starte "pandoc" '/>
-		<exec executable="pandoc" dir="0_TMP/">
-			<arg line="${ant.project.name}.md -t context+ntb+raw_tex --template=jho -s -o ${ant.project.name}.tex" />
+
+	<target name="pdf" depends="copy4pdf" unless="done">
+		<exec executable="ypp" dir = "0_TMP" output="0_TMP/${ant.project.name}.md" logError="true">
+			<arg line="-l context.lua ${ant.project.name}-pdf.md" />
 		</exec>
-	    	<echo message='Starte "context" '/>
-		<exec executable="context" dir="0_TMP/">
+		<exec executable="pandoc" dir="0_TMP">
+			<arg line="${ant.project.name}.md -t context+ntb+raw_tex --toc=true  --template=jho -s -o ${ant.project.name}.tex" />
+		</exec>
+		<exec executable="context" dir="0_TMP">
 			<arg line="${ant.project.name}.tex --result=${ant.project.name}.pdf" />
 		</exec>
-	    </target>
-
-	    <target name="pdf" depends="prepare" unless="done">
-	    	<echo message="Target: pdf"/>
-		<antcall target="make-pdf" />
 		<move file="0_TMP/${ant.project.name}.pdf" tofile="0_OUT/${ant.project.name}.pdf" />
 		<property name="done" value="done" />
-	    </target>
-    
+	</target>
 </project>
